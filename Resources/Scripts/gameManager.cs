@@ -4,56 +4,10 @@ using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-// Next step today:
-
-// A list of ships displayed next to the player grid
-// Carrier - 5 blocks
-// Battleship - 4 blocks
-// Cruiser - 3 blocks
-// Submarine - 3 blocks (different colour?)
-// Destroyer - 2 blocks
-
-// When clicked, select that ship (for example 5 blocks)
-// if you left click on the player grid, 5 blocks reserved HORIZONTALLY
-// if you right click on the player grid, 5 blocks reserved VERTICALLY
-// if ship doesn't fit, write a debug.log stating that the ship doesn't fit and leave it selected
-
-
-
-class Ship
-{
-    int numberofblocks;
-  
-    bool vertical;
-    bool placed;
-
-
-    public Ship(int blocks)
-    {
-        numberofblocks = blocks;
-        vertical = false;
-        placed = false;
-
-    }
-
-    public void place(int x,int y,bool orientation)
-    {
-
-    }
-}
-
-
-
-
-
-
 class BattleshipGrid
 {
-
     public List<Block> blocks;
     public GameObject parent;
-
 
     public BattleshipGrid()
     {
@@ -66,188 +20,149 @@ class BattleshipGrid
         {
             b.toptile.AddComponent<playerBoxController>();
             b.setClickCoordinates();
-           
         }
     }
 }
 
 class Block
 {
-    public GameObject toptile,bottomtile;
+    public GameObject toptile, bottomtile;
     public int indexX, indexY;
 
-    public void flipTile()
-    {
-
-    }
+    public void flipTile() { }
 
     public void setClickCoordinates()
     {
-        if (toptile.GetComponent<playerBoxController>()!=null)
+        if (toptile.GetComponent<playerBoxController>() != null)
         {
             toptile.GetComponent<playerBoxController>().indexX = indexX;
             toptile.GetComponent<playerBoxController>().indexY = indexY;
         }
     }
-
-  
-
 }
 
+public class Boat
+{
+    // public GameObject boat;
+    public int x, y, length;
+    public bool rotation; // true = vertical, false = horizontal
+    bool placed;
 
+    public Boat(int lengths)
+    {
+        length = lengths;
+        rotation = false;
+        placed = false;
+    }
 
+    public void place(int x,int y, bool orientation)
+    {
+
+    }
+}
 
 public class gameManager : MonoBehaviour
 {
-
     BattleshipGrid playerGrid, enemyGrid;
+    GameObject rowLabel, rowL, sq, buttonPrefab; // rowLabel is the TextPrefab, rowL is the instance of each new square, sq is the square prefab, buttonPrefab is a mystery
+    string[] letters = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
+    public bool boatActive;
+    public int curLength;
+    Boat[] allBoats;
 
-    GameObject rowLabel, rowL, buttonPrefab;
-
-
-    GameObject sq;
-
-    Ship[] allships;
-
-
-    Button createWorldButton(string label,GameObject parent,Vector3 pos)
+    Button createWorldButton(string label, GameObject parent,Vector3 pos)
     {
-        GameObject theCanvas = Instantiate(Resources.Load<GameObject>("Prefabs/myButton"), pos, Quaternion.identity);
-        theCanvas.transform.SetParent(parent.transform);
-        theCanvas.GetComponentInChildren<Text>().text = label;
+        GameObject buttonCanvas = Instantiate(Resources.Load<GameObject>("Prefabs/myButton"), pos, Quaternion.identity);
+        buttonCanvas.transform.SetParent(parent.transform);
+        buttonCanvas.GetComponentInChildren<Text>().text = label;
 
-        theCanvas.name = label;
+        buttonCanvas.name = label;
 
-        theCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
+        buttonCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
 
-        theCanvas.GetComponent<Canvas>().sortingOrder = 1;
+        buttonCanvas.GetComponent<Canvas>().sortingOrder = 1; // Ensure it's unobstructed
 
-        return theCanvas.GetComponentInChildren<Button>();
-
-       
+        return buttonCanvas.GetComponentInChildren<Button>();
     }
-
-
 
     // Start is called before the first frame update
     void Start()
     {
         sq = Resources.Load<GameObject>("Prefabs/Square");
-
         rowLabel = Resources.Load<GameObject>("Prefabs/TextPrefab");
-
         buttonPrefab = Resources.Load<GameObject>("Prefabs/myButton");
 
+        allBoats = new Boat[5];
 
-        allships = new Ship[5];
+        Boat carrier = new Boat(5);
+        Boat battleship = new Boat(5);
+        Boat cruiser = new Boat(5);
+        Boat submarine = new Boat(5);
+        Boat destroyer = new Boat(5);
 
-        Ship carrier = new Ship(5);
-        Ship battleship = new Ship(4);
-        Ship cruiser = new Ship(3);
-        Ship submarine = new Ship(3);
-        Ship destroyer = new Ship(2);
-
-        
-        allships[4] = carrier;
-        allships[3] = battleship;
-        allships[2] = cruiser;
-        allships[1] = submarine;
-        allships[0] = destroyer;
-
-
+        allBoats[0] = carrier;
+        allBoats[0] = battleship;
+        allBoats[0] = cruiser;
+        allBoats[0] = submarine;
+        allBoats[0] = destroyer;
 
         GameObject anchor = new GameObject("playergrid");
         GameObject anchor2 = new GameObject("enemygrid");
-        GameObject anchor3 = new GameObject("shipselectiongrid");
+        GameObject anchor3 = new GameObject("shipSelectionGrid");
 
-
-
-        //draw player grid
         playerGrid = GenerateGrid(anchor);
         playerGrid.parent.transform.position = new Vector3(-10f, -10f);
         playerGrid.parent.transform.localScale = new Vector3(1.5f, 1.5f);
-        playerGrid.makeClickable();
-
-        //ship selection grid
-
-
-        Button carrierButton = createWorldButton("Carrier", anchor3,new Vector3(0f,0f));
-
-        carrierButton.onClick.AddListener(
-            ()=>{
-                Debug.Log("Carrier");
-            }
-        );
-
-
-        Button battleshipButton = createWorldButton("Battleship", anchor3, new Vector3(0f, -3f));
-
-        Button submarineButton = createWorldButton("Submarine", anchor3, new Vector3(0f, -6f));
-
-
-        Button cruiserButton = createWorldButton("Cruiser", anchor3, new Vector3(0f, -9f));
-
-        Button destroyerButton = createWorldButton("Destroyer", anchor3, new Vector3(0f, -12f));
-
-       
-
-
-
-       
-      
-        anchor3.transform.position = new Vector3(10f, -4f);
-
-
-
-
-
-
-
+        playerGrid.makeClickable(); // This adds the playerBoxController script to all clickable boxes
 
         enemyGrid = GenerateGrid(anchor2);
         enemyGrid.parent.transform.position = new Vector3(10f, 10f);
         enemyGrid.parent.transform.localScale = new Vector3(1.5f, 1.5f);
+
+        // Ship selection
+        Button carrierBtn = createWorldButton("Carrier", anchor3, new Vector3(0f, 0f));
+        carrierBtn.onClick.AddListener(() => { Debug.Log("Carrier button pressed"); });
+        Button battleshipBtn = createWorldButton("Battleship", anchor3, new Vector3(0f, -3f));
+        battleshipBtn.onClick.AddListener(() => { Debug.Log("Battleship button pressed"); });
+        Button submarineBtn = createWorldButton("Submarine", anchor3, new Vector3(0f, -6f));
+        submarineBtn.onClick.AddListener(() => { Debug.Log("Submarine button pressed"); });
+        Button cruiserBtn = createWorldButton("Cruiser", anchor3, new Vector3(0f, -9f));
+        cruiserBtn.onClick.AddListener(() => { Debug.Log("Cruiser button pressed"); });
+        Button destroyerBtn = createWorldButton("Destroyer", anchor3, new Vector3(0f, -12f));
+        destroyerBtn.onClick.AddListener(() => { Debug.Log("Destroyer button pressed"); });
+
+        anchor3.transform.position = new Vector3(10f, -4f);
+
+        MakeBoats(6);
     }
-
-
-    string [] letters = {"A","B","C","D","E","F","G","H","I","J"};
-
 
     BattleshipGrid GenerateGrid(GameObject parentObject)
     {
-        int rowcounter = 0;
-        int columncounter = 0;
+        int yCounter = 0;
         int lettercounter = 0;
         BattleshipGrid grid = new BattleshipGrid();
 
         for (float ycoord = -4.5f; ycoord <= 4.5f; ycoord++)
         {
             //for each row
-
-            rowcounter++;
+            yCounter++;
             rowL = Instantiate(rowLabel, new Vector3(-5.5f, ycoord), Quaternion.identity);
-            rowL.GetComponentInChildren<Text>().text = rowcounter.ToString();
+            rowL.GetComponentInChildren<Text>().text = yCounter.ToString();
             rowL.transform.SetParent(parentObject.transform);
-            //rowL.transform.GetChild(0).transform.position = new Vector3(-2f, ycoord));
 
-            
-            
-
-
-
+            int xCounter = 0;
             for (float xcoord = -4.5f; xcoord <= 4.5f; xcoord++)
             {
-                //first row at the top
+                xCounter++;
+                //first row
                 if (ycoord == 4.5f)
                 {
-                    
                     rowL = Instantiate(rowLabel, new Vector3(xcoord, 5.5f), Quaternion.identity);
                     rowL.GetComponentInChildren<Text>().text = letters[lettercounter];
                     rowL.transform.SetParent(parentObject.transform);
                     lettercounter++;
                 }
 
-                columncounter++;
                 Block b = new Block();
                 b.bottomtile = Instantiate(sq, new Vector3(xcoord, ycoord), Quaternion.identity);
                 b.toptile = Instantiate(sq, new Vector3(xcoord, ycoord), Quaternion.identity);
@@ -255,21 +170,52 @@ public class gameManager : MonoBehaviour
                 b.toptile.name = "TopTile";
                 b.toptile.AddComponent<BoxCollider2D>();
                 b.toptile.GetComponent<BoxCollider2D>().isTrigger = true;
+                b.toptile.GetComponent<BoxCollider2D>().size = new Vector3(1.25f, 1.25f, 1);
                 b.bottomtile.GetComponent<SpriteRenderer>().color = Color.black;
                 b.toptile.transform.SetParent(parentObject.transform);
                 b.bottomtile.transform.SetParent(parentObject.transform);
                 b.bottomtile.name = "BottomTile";
-                b.indexX = columncounter;
-                b.indexY = rowcounter;
-                
-                grid.blocks.Add(b);
 
+                b.indexX = xCounter;
+                b.indexY = yCounter;
+
+                grid.blocks.Add(b);
             }
-            columncounter = 0;
         }
         grid.parent = parentObject;
         return grid;
+    }
 
+    IEnumerator MakeBoats(int numOfBoats)
+    {
+        int length;
+        for (int i = 2; i < (numOfBoats + 2); i++)
+        {
+            if (i > 7)
+                length = i - 7;
+            else
+                length = i;
+            yield return PlaceBoat(length);
+        }
+
+        foreach(Block b in playerGrid.blocks)
+        {
+            Destroy(b.toptile.GetComponent<playerBoxController>());
+        }
+
+        enemyGrid.makeClickable();
+    }
+
+    public Boat boat;
+    IEnumerator PlaceBoat(int length)
+    {
+        boatActive = true;
+        boat = new Boat(length);
+
+        while (boatActive)
+            yield return null;
+        
+        yield return null;
     }
 
     // Update is called once per frame

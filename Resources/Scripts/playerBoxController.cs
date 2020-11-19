@@ -5,47 +5,41 @@ using UnityEngine;
 public class playerBoxController : MonoBehaviour
 {
     bool highlighted = false;
+    bool containsBoat = false;
     Color currentColor;
     public int indexX, indexY;
 
     private void Start()
     {
         currentColor = GetComponent<SpriteRenderer>().color;
-        
-        
     }
 
-
-
-
-    void OnMouseOver()
+    private void OnMouseEnter()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            //horizontal
-            Debug.Log("Horizontal"+indexX + " " + indexY);
-            flipColor();
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
-            //horizontal
-            Debug.Log("Vertical" + indexX + " " + indexY);
-            flipColor();
-        }
-
-
+        Color trans;
+        if (highlighted)
+            trans = Color.red;
+        else
+            trans = currentColor;
+        trans.a = 0.8f;
+        GetComponent<SpriteRenderer>().color = trans;
     }
 
-    void flipColor()
+    private void OnMouseExit()
     {
-        // Destroy the gameObject after clicking on it
+        if (highlighted)
+            GetComponent<SpriteRenderer>().color = Color.red;
+        else
+            GetComponent<SpriteRenderer>().color = currentColor;
+    }
+
+    void OnMouseDown()
+    {
+        // Replace with making a check to see if the boat will fit, 
+        // and then placing the boat if possible
         highlighted = !highlighted;
 
-
-
-        //  Debug.Log(highlighted);
-
-       
+        Debug.Log(highlighted + " " + indexX + indexY);
 
         if(highlighted)
         {

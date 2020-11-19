@@ -5,12 +5,14 @@ using UnityEngine;
 public class playerBoxController : MonoBehaviour
 {
     bool highlighted = false;
-    bool containsBoat = false;
+    public bool containsBoat = false;
     Color currentColor;
     public int indexX, indexY;
+    GameObject camera;
 
     private void Start()
     {
+        camera = GameObject.Find("Main Camera");
         currentColor = GetComponent<SpriteRenderer>().color;
     }
 
@@ -48,5 +50,57 @@ public class playerBoxController : MonoBehaviour
         {
             GetComponent<SpriteRenderer>().color = currentColor;
         }
+
+        camera.GetComponent<gameManager>().clickedPlayerGrid(indexX, indexX);
+
+        /*if(camera.GetComponent<gameManager>().activeBoat != null)
+        {
+            print("Lol boat");
+            Boat theBoat = camera.GetComponent<gameManager>().activeBoat;
+
+            if (theBoat.rotation) // ie Vertical
+            {
+                if (indexY + theBoat.length > 10)
+                {
+                    Debug.Log("Doesn't fit");
+                }
+                else
+                {
+                    theBoat.x = indexX;
+                    theBoat.y = indexY;
+
+                    for(int i = 0; i < theBoat.length; i++)
+                    {
+                        // Set all blocks in the range *this block* - **length* blocks above this block* to containsBoat=true
+                    }
+
+                    print("Boat goes from " + indexX + " " + indexY + " all the way to " + indexX + " " + (indexY + theBoat.length));
+                }
+            }
+            else
+            {
+                if (indexX + theBoat.length > 10)
+                {
+                    Debug.Log("Doesn't fit");
+                }
+                else
+                {
+                    theBoat.x = indexX;
+                    theBoat.y = indexY;
+
+                    for (int i = 0; i < theBoat.length; i++)
+                    {
+                        // Set all blocks in the range *this block* - **length* blocks above this block* to containsBoat=true
+                    }
+
+                    print("Boat goes from " + indexX + " " + indexY + " all the way to " + (indexX + theBoat.length) + " " + indexY);
+                }
+            }
+        }*/
+    }
+
+    public void placeBoat()
+    {
+        containsBoat = true;
     }
 }

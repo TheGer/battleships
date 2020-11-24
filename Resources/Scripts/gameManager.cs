@@ -105,7 +105,7 @@ public class Boat
         {
             if (orientation)
             {
-                if (y + length <= 10)
+                if (y + (length - 1) <= 10)
                 {
                     if (checkFree(x, y, g, true))
                     {
@@ -124,7 +124,7 @@ public class Boat
             }
             else
             {
-                if (x + length <= 10)
+                if (x + (length - 1) <= 10)
                 {
                     if (checkFree(x, y, g, true))
                     {

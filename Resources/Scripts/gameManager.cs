@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.UI;
 
-class BattleshipGrid
+public class BattleshipGrid
 {
     public List<Block> blocks;
     public GameObject parent;
@@ -24,10 +24,16 @@ class BattleshipGrid
     }
 }
 
-class Block
+public class Block
 {
     public GameObject toptile, bottomtile;
     public int indexX, indexY;
+    public bool filled;
+
+    public Block()
+    {
+        filled = false;
+    }
 
     public void flipTile() { }
 
@@ -46,32 +52,197 @@ public class Boat
     // public GameObject boat;
     public int x, y, length;
     public bool rotation; // true = vertical, false = horizontal
-    bool placed;
+    public bool placed;
+    Color colour;
 
-    public Boat(int lengths)
+    public Boat(int length)
     {
-        length = lengths;
+        this.length = length;
         rotation = false;
         placed = false;
+        colour = Color.red;
     }
 
-    public void place(int x,int y, bool orientation)
+    public void setColour(Color newColour)
     {
-
+        colour = newColour;
     }
+
+    bool checkFree(int x, int y, BattleshipGrid g, bool orientation)
+    {
+        if (orientation)
+        {
+            foreach(Block b in g.blocks)
+            {
+                if (b.indexY >= y && b.indexY < (y + length) && b.indexX == x)
+                {
+                    if (b.filled)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (Block b in g.blocks)
+            {
+                if (b.indexX >= x && b.indexX < (x + length) && b.indexY == y)
+                {
+                    if (b.filled)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public void place(int x,int y, bool orientation, BattleshipGrid g)
+    {
+        if (!placed)
+        {
+            if (orientation)
+            {
+                if (y + length <= 10)
+                {
+                    if (checkFree(x, y, g, true))
+                    {
+                        foreach (Block b in g.blocks)
+                        {
+                            if (b.indexY >= y && b.indexY < (y + length) && b.indexX == x)
+                            {
+                                b.toptile.GetComponent<SpriteRenderer>().color = Color.gray;
+                                b.bottomtile.GetComponent<SpriteRenderer>().color = this.colour;
+                                b.filled = true;
+                            }
+                        }
+                        placed = true;
+                    }
+                }
+            }
+            else
+            {
+                if (x + length <= 10)
+                {
+                    if (checkFree(x, y, g, true))
+                    {
+                        foreach (Block b in g.blocks)
+                        {
+                            if (b.indexX >= x && b.indexX < (x + length) && b.indexY == y)
+                            {
+                                b.toptile.GetComponent<SpriteRenderer>().color = Color.gray;
+                                b.bottomtile.GetComponent<SpriteRenderer>().color = this.colour;
+                                b.filled = true;
+                            }
+                        }
+                        placed = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
+public class GameSession
+{
+    public bool gameStarted, isMyTurn;
+
+    int shotsFired; // I'd rather rename to turns, but we'll see
+    List<Block> hitBlocks;
+
+    Boat[] theBoats;
+
+    public BattleshipGrid enemyGrid;
+
+    public GameSession(Boat[] allBoats)
+    {
+        theBoats = allBoats;
+    }
+
+    public bool areAllBoatsPlaced()
+    {
+        foreach(Boat b in theBoats)
+        {
+            if (!b.placed)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void startGame()
+    {
+        isMyTurn = true;
+    }
+
+    public void fireShot() { }
 }
 
 public class gameManager : MonoBehaviour
 {
-    BattleshipGrid playerGrid, enemyGrid;
-    GameObject rowLabel, rowL, sq, buttonPrefab; // rowLabel is the TextPrefab, rowL is the instance of each new square, sq is the square prefab, buttonPrefab is a mystery
+    public BattleshipGrid playerGrid, enemyGrid;
+    GameObject rowLabel, rowL, sq, buttonPrefab, timerText, timer; // rowLabel is the TextPrefab, rowL is the instance of each new square, sq is the square prefab, buttonPrefab is a mystery
+    
+    GameSession session;
+    bool timerRunning = false;
+
     string[] letters = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
     //public bool boatActive;
     Boat[] allBoats;
 
     public Boat activeBoat = null;
 
-    Button createWorldButton(string label, GameObject parent,Vector3 pos)
+    public IEnumerator myTurn()
+    {
+        timerText.GetComponentInChildren<Text>().text = "00:00";
+        while (true)
+        {
+            if (session.areAllBoatsPlaced())
+            {
+                // Start rounds
+
+                // Update timer (running at the same time different speed)
+                if (!timerRunning)
+                    StartCoroutine(updateTimer());
+
+                // Wait for player to play a shot
+
+                // Check if hit
+
+                // If hit continue, if not stop
+            }
+            yield return null;
+        }
+
+    }
+
+    public IEnumerator updateTimer()
+    {
+        float timerValue = 0f;
+
+        Text clockText = timer.GetComponentInChildren<Text>();
+
+        timerRunning = true;
+
+        // clockText.text = "00:00";
+        while (session.isMyTurn)
+        {
+            timerValue++;
+
+            float minutes = timerValue / 60f;
+            float seconds = timerValue % 60f;
+
+            clockText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+            yield return new WaitForSeconds(1f);
+        }
+        yield return null;
+    }
+
+    Button createWorldButton(string label, GameObject parent, Vector3 pos)
     {
         GameObject buttonCanvas = Instantiate(Resources.Load<GameObject>("Prefabs/myButton"), pos, Quaternion.identity);
         buttonCanvas.transform.SetParent(parent.transform);
@@ -92,6 +263,7 @@ public class gameManager : MonoBehaviour
         sq = Resources.Load<GameObject>("Prefabs/Square");
         rowLabel = Resources.Load<GameObject>("Prefabs/TextPrefab");
         buttonPrefab = Resources.Load<GameObject>("Prefabs/myButton");
+        timerText = rowLabel;
 
         allBoats = new Boat[5];
 
@@ -102,10 +274,10 @@ public class gameManager : MonoBehaviour
         Boat destroyer = new Boat(2);
 
         allBoats[0] = carrier;
-        allBoats[0] = battleship;
-        allBoats[0] = cruiser;
-        allBoats[0] = submarine;
-        allBoats[0] = destroyer;
+        allBoats[1] = battleship;
+        allBoats[2] = submarine;
+        allBoats[3] = cruiser;
+        allBoats[4] = destroyer;
 
         GameObject anchor = new GameObject("playergrid");
         GameObject anchor2 = new GameObject("enemygrid");
@@ -128,15 +300,23 @@ public class gameManager : MonoBehaviour
         Button destroyerBtn = createWorldButton("Destroyer", anchor3, new Vector3(0f, -12f));
 
         carrierBtn.onClick.AddListener(() => { Debug.Log("Carrier button pressed"); });
-        carrierBtn.onClick.AddListener(() => { activeBoat = carrier; });
+        carrierBtn.onClick.AddListener(() => { activeBoat = allBoats[0]; });
         battleshipBtn.onClick.AddListener(() => { Debug.Log("Battleship button pressed"); });
+        battleshipBtn.onClick.AddListener(() => { activeBoat = allBoats[1]; });
         submarineBtn.onClick.AddListener(() => { Debug.Log("Submarine button pressed"); });
+        submarineBtn.onClick.AddListener(() => { activeBoat = allBoats[2]; });
         cruiserBtn.onClick.AddListener(() => { Debug.Log("Cruiser button pressed"); });
+        cruiserBtn.onClick.AddListener(() => { activeBoat = allBoats[3]; });
         destroyerBtn.onClick.AddListener(() => { Debug.Log("Destroyer button pressed"); });
+        destroyerBtn.onClick.AddListener(() => { activeBoat = allBoats[4]; });
 
         anchor3.transform.position = new Vector3(10f, -4f);
 
-        // MakeBoats();
+        timer = Instantiate(timerText, new Vector3(-18f, 19f), Quaternion.identity);
+        session = new GameSession(allBoats);
+
+        session.startGame();
+        StartCoroutine(myTurn());
     }
 
     BattleshipGrid GenerateGrid(GameObject parentObject)
@@ -213,6 +393,7 @@ public class gameManager : MonoBehaviour
         yield return null;
     }
 
+    /* Changed to meet teacher's standards
     public void clickedPlayerGrid(int x, int y)
     { 
         if (activeBoat != null)
@@ -262,6 +443,7 @@ public class gameManager : MonoBehaviour
             }
         }
     }
+    */
 
     // Update is called once per frame
     void Update()

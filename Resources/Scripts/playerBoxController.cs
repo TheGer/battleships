@@ -5,37 +5,66 @@ using UnityEngine;
 public class playerBoxController : MonoBehaviour
 {
     bool highlighted = false;
-    public bool containsBoat = false;
-    Color currentColor;
+    //public bool containsBoat = false; // Commented out to sync with teacher, it's added to gameManager
+    Color currentColour;
     public int indexX, indexY;
-    GameObject camera;
+    //GameObject camera;
+    gameManager gm;
 
     private void Start()
     {
-        camera = GameObject.Find("Main Camera");
-        currentColor = GetComponent<SpriteRenderer>().color;
+        currentColour = GetComponent<SpriteRenderer>().color;
+        gm = Camera.main.GetComponent<gameManager>();
+
+        //camera = GameObject.Find("Main Camera");
     }
 
     private void OnMouseEnter()
     {
         Color trans;
-        if (highlighted)
-            trans = Color.red;
-        else
-            trans = currentColor;
+        trans = GetComponent<SpriteRenderer>().color;
         trans.a = 0.8f;
         GetComponent<SpriteRenderer>().color = trans;
     }
 
     private void OnMouseExit()
     {
-        if (highlighted)
-            GetComponent<SpriteRenderer>().color = Color.red;
-        else
-            GetComponent<SpriteRenderer>().color = currentColor;
+        Color colour = GetComponent<SpriteRenderer>().color;
+        colour.a = 1f;
+        GetComponent<SpriteRenderer>().color = colour;
     }
 
-    void OnMouseDown()
+    private void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            // This makes a horizontal boat
+            Debug.Log("Horizontal boat " + indexX + " " + indexY);
+            gm.activeBoat.place(indexX, indexY, false, gm.playerGrid);
+        }
+        if (Input.GetMouseButtonDown(1))
+        {
+            // Makes a vertical boat
+            Debug.Log("Vertical boat " + indexX + " " + indexY);
+            gm.activeBoat.place(indexX, indexY, true, gm.playerGrid);
+        }
+    }
+
+    void flipColour()
+    {
+        highlighted = !highlighted;
+
+        if (highlighted)
+        {
+            GetComponent<SpriteRenderer>().color = Color.red;
+        }
+        else
+        {
+            GetComponent<SpriteRenderer>().color = currentColour;
+        }
+    }
+
+    /*void OnMouseDown()
     {
         // Replace with making a check to see if the boat will fit, 
         // and then placing the boat if possible
@@ -48,7 +77,7 @@ public class playerBoxController : MonoBehaviour
             GetComponent<SpriteRenderer>().color = Color.red;
         }else
         {
-            GetComponent<SpriteRenderer>().color = currentColor;
+            GetComponent<SpriteRenderer>().color = currentColour;
         }
 
         camera.GetComponent<gameManager>().clickedPlayerGrid(indexX, indexX);
@@ -96,11 +125,11 @@ public class playerBoxController : MonoBehaviour
                     print("Boat goes from " + indexX + " " + indexY + " all the way to " + (indexX + theBoat.length) + " " + indexY);
                 }
             }
-        }*/
-    }
+        }
+    //}
 
     public void placeBoat()
     {
         containsBoat = true;
-    }
+    }*/
 }

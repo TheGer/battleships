@@ -25,6 +25,7 @@ public class playerBoxController : MonoBehaviour
 
     void OnMouseOver()
     {
+        //has the player placed ships?
         if (!gm.session.gameStarted)
         { 
             if (Input.GetMouseButtonDown(0))

@@ -36,6 +36,15 @@ public class enemyBoxController : MonoBehaviour
             { 
                 flipColor();
                 gm.session.isMyTurn = false;
+                //if multiplayer, the logic of waiting for the other player will be somewhere here.
+
+                //did I hit? 
+
+                //if I did hit, I can shoot again
+
+                //if I did not hit, I cannot shoot again
+
+                //wait for a few seconds until I can shoot again
                 StartCoroutine(gm.waitForTurn());
             }
         }

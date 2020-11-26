@@ -153,6 +153,8 @@ public class BattleshipGrid
         blocks = new List<Block>();
     }
 
+
+    //to place ships on the player grid using playerBoxController
     public void makeClickable()
     {
         foreach (Block b in blocks)
@@ -163,6 +165,7 @@ public class BattleshipGrid
         }
     }
 
+    //to place shots on the enemy grid using enemyBoxController
     public void makeClickableEnemy()
     {
         foreach (Block b in blocks)
@@ -227,6 +230,7 @@ public class gameSession
     //for hits
     public BattleshipGrid enemyGrid;
 
+    //no ships placed at the beginning of the game
     public gameSession(Ship[] allShips)
     {
         theShips = allShips;
@@ -298,11 +302,11 @@ public class gameManager : MonoBehaviour
                 //start rounds
                
                     //update timer (running at the same time different speed)
-                    if (!timerrunning) {
-                    session.startGame();
-                    StartCoroutine(updateTimer());
-                    
-                }
+                    if (!timerrunning) 
+                    {
+                        session.startGame();
+                        StartCoroutine(updateTimer());
+                    }
 
                 //wait for player to play a shot
 
@@ -318,6 +322,7 @@ public class gameManager : MonoBehaviour
 
     }
 
+    //The code that runs the clock
     public IEnumerator updateTimer()
     {
         float timerValue = 0f;
@@ -495,10 +500,11 @@ public class gameManager : MonoBehaviour
         enemyGrid.parent.transform.localScale = new Vector3(1.5f, 1.5f);
         enemyGrid.makeClickableEnemy();
 
-
+        //at the moment, theTimer contains the word 'test'
         theTimer = Instantiate(timerText, new Vector3(-18f, 19f), Quaternion.identity);
 
-       session = new gameSession(allships);
+        //gameSession, which is declared a bit further up.
+        session = new gameSession(allships);
 
         
         StartCoroutine(myTurn());

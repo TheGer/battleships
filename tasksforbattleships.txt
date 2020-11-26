@@ -5,6 +5,9 @@ Tasks for today
 
 2. Create a reset button that clears ALL battleships and allows you to place again.
 
-3. Clean up the timer and start it from 0.  
+3. Clean up the timer and start it from 0.  dfdfsdfds
 
-4. Set a 3 second countdown for the game to start AFTER all the ships have been placed.
+4. Set a 3 second countdown for the game to start AFTER addsfdsll the ships have been p*laced.
+
+
+.///this is some extra stuff

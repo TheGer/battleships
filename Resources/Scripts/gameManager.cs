@@ -268,6 +268,13 @@ public class gameSession
 
 
 
+public class Player
+{
+    public string PlayerName;
+    public bool isHisTurn;
+
+}
+
 public class gameManager : MonoBehaviour
 {
 
@@ -279,6 +286,8 @@ public class gameManager : MonoBehaviour
 
     bool timerrunning = false;
 
+    FirebaseScript dbScript;
+
 
     GameObject sq;
 
@@ -286,6 +295,31 @@ public class gameManager : MonoBehaviour
 
     public Ship currentlySelectedShip;
 
+    int playercounter = 1;
+
+
+    IEnumerator addPlayerToFirebase()
+    {
+
+        dbScript = Camera.main.GetComponent<FirebaseScript>();
+       yield return dbScript.initFirebase();
+        Player newPlayer = new Player();
+        newPlayer.PlayerName = "P"+playercounter;
+        newPlayer.isHisTurn = true;
+        yield return dbScript.getNumberOfRecords();
+        playercounter = dbScript.numberOfRecords;
+
+        
+      //  if (playercounter > 2)
+        yield return dbScript.clearFirebase();
+
+        yield return dbScript.addDataClass(JsonUtility.ToJson(newPlayer));
+
+        //player has been added
+
+        //player should be inserted to firebase now. 
+
+    }
 
 
     public IEnumerator myTurn()
@@ -301,6 +335,7 @@ public class gameManager : MonoBehaviour
                     if (!timerrunning) {
                     session.startGame();
                     StartCoroutine(updateTimer());
+                    StartCoroutine(addPlayerToFirebase());
                     
                 }
 
@@ -377,6 +412,9 @@ public class gameManager : MonoBehaviour
         rowLabel = Resources.Load<GameObject>("Prefabs/TextPrefab");
 
         buttonPrefab = Resources.Load<GameObject>("Prefabs/myButton");
+
+        //add the firebase script to the main camera
+        Camera.main.gameObject.AddComponent<FirebaseScript>();
 
         timerText = rowLabel;
 
@@ -533,10 +571,6 @@ public class gameManager : MonoBehaviour
             rowL.GetComponentInChildren<Text>().text = rowcounter.ToString();
             rowL.transform.SetParent(parentObject.transform);
             //rowL.transform.GetChild(0).transform.position = new Vector3(-2f, ycoord));
-
-
-
-
 
 
             for (float xcoord = -4.5f; xcoord <= 4.5f; xcoord++)

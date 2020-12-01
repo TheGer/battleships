@@ -20,6 +20,13 @@ using UnityEngine.UI;
 // if ship doesn't fit, write a debug.log stating that the ship doesn't fit and leave it selected
 
 
+//At the beginning of the game we are missing some information 
+//1. Player name
+//2. Is another player connected? 
+
+
+
+
 
 public class Ship
 {
@@ -304,9 +311,13 @@ public class gameManager : MonoBehaviour
         dbScript = Camera.main.GetComponent<FirebaseScript>();
        yield return dbScript.initFirebase();
         Player newPlayer = new Player();
+
         newPlayer.PlayerName = "P"+playercounter;
         newPlayer.isHisTurn = true;
+
+
         yield return dbScript.getNumberOfRecords();
+        //writing 0
         playercounter = dbScript.numberOfRecords;
 
         
@@ -329,27 +340,15 @@ public class gameManager : MonoBehaviour
         {
             if (session.areAllShipsPlaced())
             {
-                //start rounds
-               
-                    //update timer (running at the same time different speed)
-                    if (!timerrunning) {
-                    session.startGame();
-                    StartCoroutine(updateTimer());
-                    StartCoroutine(addPlayerToFirebase());
-                    
-                }
-
-                //wait for player to play a shot
-
-                //check if hit
-
-                //if hit continue, if not stop
-
-
-
+               break;   
             }
             yield return null;
         }
+        //this will happen only when all ships are placed.
+        session.startGame();
+        StartCoroutine(updateTimer());
+        StartCoroutine(addPlayerToFirebase());
+        yield return null;
 
     }
 
@@ -415,6 +414,10 @@ public class gameManager : MonoBehaviour
 
         //add the firebase script to the main camera
         Camera.main.gameObject.AddComponent<FirebaseScript>();
+
+        //GameObject.Find
+
+        //Singleton class
 
         timerText = rowLabel;
 

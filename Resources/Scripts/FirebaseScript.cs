@@ -79,7 +79,7 @@ public class FirebaseScript : MonoBehaviour
             {
                 if (rmAllRecords.IsCompleted)
                 {
-                    Debug.Log("Databas clear");
+                    Debug.Log("Database clear");
                 }
             });
 
@@ -141,7 +141,7 @@ public class FirebaseScript : MonoBehaviour
     {
         auth = FirebaseAuth.DefaultInstance;
 
-
+        //the outside task is a DIFFERENT NAME to the anonymous inner class
         Task signintask = auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(
              signInTask =>
              {

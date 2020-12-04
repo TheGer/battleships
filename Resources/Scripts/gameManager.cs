@@ -24,9 +24,9 @@ using UnityEngine.UI;
 //1. Player name
 //2. Is another player connected? 
 
-
-
-
+//FOR THURSDAY
+//Implement two player code with number of shots in firebase.
+//P1 will shoot in red, P2 will shoot in blue on the same enemy grid
 
 public class Ship
 {
@@ -142,11 +142,6 @@ public class Ship
 
     }
 }
-
-
-
-
-
 
 public class BattleshipGrid
 {
@@ -272,9 +267,6 @@ public class gameSession
 
 }
 
-
-
-
 public class Player
 {
     public string PlayerName;
@@ -304,6 +296,31 @@ public class gameManager : MonoBehaviour
 
     int playercounter = 1;
 
+    IEnumerator clearDB()
+    {
+        
+        yield return dbScript.clearFirebase();
+        Application.Quit();
+    }
+
+    IEnumerator waitForOtherPlayer()
+    {
+        while (playercounter<2)
+        {
+            Debug.Log("Waiting for other player" + Time.time);
+            yield return dbScript.getNumberOfRecords();
+            playercounter = dbScript.numberOfRecords;
+           
+            
+            
+        }
+        //if another player joins everything is deleted DANGEROUS
+        
+            
+        
+
+        yield return null;
+    }
 
     IEnumerator addPlayerToFirebase()
     {
@@ -316,15 +333,14 @@ public class gameManager : MonoBehaviour
         newPlayer.isHisTurn = true;
 
 
-        yield return dbScript.getNumberOfRecords();
-        //writing 0
-        playercounter = dbScript.numberOfRecords;
-
         
-      //  if (playercounter > 2)
-        yield return dbScript.clearFirebase();
+        
+        //yield return dbScript.clearFirebase();
+
 
         yield return dbScript.addDataClass(JsonUtility.ToJson(newPlayer));
+
+        yield return waitForOtherPlayer();
 
         //player has been added
 
@@ -406,19 +422,19 @@ public class gameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //template for a square
         sq = Resources.Load<GameObject>("Prefabs/Square");
 
+        //template for the labels and text that there is on screen
         rowLabel = Resources.Load<GameObject>("Prefabs/TextPrefab");
 
+        //template for the buttons that are loaded on screen
         buttonPrefab = Resources.Load<GameObject>("Prefabs/myButton");
 
         //add the firebase script to the main camera
         Camera.main.gameObject.AddComponent<FirebaseScript>();
 
-        //GameObject.Find
-
-        //Singleton class
-
+        //made a copy of rowlabel in the variable timertext
         timerText = rowLabel;
 
 
@@ -447,8 +463,8 @@ public class gameManager : MonoBehaviour
 
         //draw player grid
         playerGrid = GenerateGrid(anchor);
-        playerGrid.parent.transform.position = new Vector3(-10f, -10f);
-        playerGrid.parent.transform.localScale = new Vector3(1.5f, 1.5f);
+        anchor.transform.position = new Vector3(-10f, -10f);
+        anchor.transform.localScale = new Vector3(1.5f, 1.5f);
         playerGrid.makeClickable();
 
         //ship selection grid
@@ -468,10 +484,6 @@ public class gameManager : MonoBehaviour
 
             }
         );
-
-
-
-
 
         Button battleshipButton = createWorldButton("Battleship", anchor3, new Vector3(0f, -3f));
 
@@ -518,18 +530,8 @@ public class gameManager : MonoBehaviour
             }
         );
 
-
-       
-
-
+        //the position of the ship selection grid.
         anchor3.transform.position = new Vector3(10f, -4f);
-
-
-
-
-
-
-
 
         enemyGrid = GenerateGrid(anchor2);
         enemyGrid.parent.transform.position = new Vector3(10f, 10f);
@@ -539,9 +541,8 @@ public class gameManager : MonoBehaviour
 
         theTimer = Instantiate(timerText, new Vector3(-18f, 19f), Quaternion.identity);
 
-       session = new gameSession(allships);
+        session = new gameSession(allships);
 
-        
         StartCoroutine(myTurn());
 
 
@@ -579,6 +580,7 @@ public class gameManager : MonoBehaviour
             for (float xcoord = -4.5f; xcoord <= 4.5f; xcoord++)
             {
                 //first row at the top
+                //This is the last thing to happen - showing the letters across the top
                 if (ycoord == 4.5f)
                 {
 
@@ -617,6 +619,9 @@ public class gameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            StartCoroutine(clearDB());
+        }
     }
 }

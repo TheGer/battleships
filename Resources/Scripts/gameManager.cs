@@ -28,6 +28,15 @@ using UnityEngine.UI;
 //Implement two player code with number of shots in firebase.
 //P1 will shoot in red, P2 will shoot in blue on the same enemy grid
 
+
+//Try to make sure that once there are two players, no other players can join.
+
+//1. Figure out turns
+//2. Figure out shots and hits 
+//3. Figure out end of game
+
+
+
 public class Ship
 {
     int numberofblocks;
@@ -272,6 +281,8 @@ public class Player
     public string PlayerName;
     public bool isHisTurn;
 
+    
+
 }
 
 public class gameManager : MonoBehaviour
@@ -286,6 +297,10 @@ public class gameManager : MonoBehaviour
     bool timerrunning = false;
 
     FirebaseScript dbScript;
+
+    //these correspond with the unique keys in firebase
+    public string currentPlayerKey,enemyPlayerKey;
+    
 
 
     GameObject sq;
@@ -315,9 +330,13 @@ public class gameManager : MonoBehaviour
             
         }
         //if another player joins everything is deleted DANGEROUS
+        Player otherPlayer = new Player();
+        //I need to get the key of the OTHER player
         
-            
-        
+         yield return dbScript.getOtherPlayerKey(otherPlayer, this);
+
+        //what variable will be filled here?
+
 
         yield return null;
     }
@@ -338,7 +357,7 @@ public class gameManager : MonoBehaviour
         //yield return dbScript.clearFirebase();
 
 
-        yield return dbScript.addDataClass(JsonUtility.ToJson(newPlayer));
+        yield return dbScript.addDataClass(JsonUtility.ToJson(newPlayer),this);
 
         yield return waitForOtherPlayer();
 

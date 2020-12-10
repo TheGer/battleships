@@ -37,11 +37,13 @@ public class FirebaseScript : MonoBehaviour
 
 
 
-    public IEnumerator addDataClass(string datatoinsert)
+    public IEnumerator addDataClass(string datatoinsert,gameManager g)
     {
         //create a unique ID
         string newkey = reference.Push().Key;
         Debug.Log(newkey);
+        //the key for the current player
+        g.currentPlayerKey = newkey;
         //Update the unique key with the data I want to insert
         yield return StartCoroutine(updateDataClass(newkey, datatoinsert));
 
@@ -249,7 +251,51 @@ public class FirebaseScript : MonoBehaviour
     }
 
 
-    IEnumerator getAllDataFromFirebase()
+    public IEnumerator getOtherPlayerKey(Player otherPlayer , gameManager g)
+    {
+        Task getotherplayer = reference.GetValueAsync().ContinueWithOnMainThread(
+            getOtherPlayerTask =>
+                {
+                    if (getOtherPlayerTask.IsFaulted)
+                    {
+                        Debug.Log("Error getting data " + getOtherPlayerTask.Exception);
+                    }
+                    if (getOtherPlayerTask.IsCompleted)
+                    {
+                        DataSnapshot snapshot = getOtherPlayerTask.Result;
+                        //Debug.Log(snapshot.Value.ToString());
+
+                        //snapshot object is casted to an instance of its type
+                        myDataDictionary = (Dictionary<string, object>)snapshot.Value;
+
+
+                    }
+                }
+            
+            );
+
+        //wait until I'm done.
+        yield return new WaitUntil(() => getotherplayer.IsCompleted);
+        //all the data inside mydatadictionary
+        //this gets me the second key (which is what I want)
+
+        foreach (var element in myDataDictionary)
+        {
+            if (!(g.currentPlayerKey == element.Key.ToString()))
+            {
+                g.enemyPlayerKey = element.Key.ToString();
+            }
+        }
+
+            //Debug.Log(myDataDictionary.Keys.ToList());
+
+         
+
+
+    }
+
+
+   public  IEnumerator getAllDataFromFirebase()
     {
 
         Task getdatatask = reference.GetValueAsync().ContinueWithOnMainThread(
@@ -286,7 +332,7 @@ public class FirebaseScript : MonoBehaviour
     {
         foreach (var element in myDataDictionary)
         {
-         //   Debug.Log(element.Key.ToString() + "<->" + element.Value.ToString());
+            Debug.Log(element.Key.ToString() + "<->" + element.Value.ToString());
             yield return new WaitForSeconds(1f);
         }
 

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+
 //using UnityEngine.UIElements;
 
 
@@ -289,9 +290,32 @@ public class FirebaseScript : MonoBehaviour
 
             //Debug.Log(myDataDictionary.Keys.ToList());
 
-         
+    }
+
+    public IEnumerator addShot(gameManager g,Shot s)
+    {
+        string jsonshot = JsonUtility.ToJson(s);
+        Task addshottask = reference.Child(g.currentPlayerKey).Push().SetRawJsonValueAsync(jsonshot);
+
+        yield return new WaitUntil(() => addshottask.IsCompleted);
+
+    }
+
+    public IEnumerator saveShips(gameManager g, Fleet f)
+    {
+        
+        string jsonfleet = JsonUtility.ToJson(f);
 
 
+        Debug.Log(f.ToString());
+
+        Debug.Log(jsonfleet);
+
+        
+
+        Task addfleettask = reference.Child(g.currentPlayerKey).Push().SetRawJsonValueAsync(jsonfleet);
+
+        yield return new WaitUntil(() => addfleettask.IsCompleted);
     }
 
 

@@ -21,6 +21,11 @@ public class enemyBoxController : MonoBehaviour
     }
 
 
+    IEnumerator handleShot()
+    {
+        yield return gm.dbScript.addShot(gm, new Shot(indexX, indexY));
+
+    }
 
 
     void OnMouseOver()
@@ -36,7 +41,9 @@ public class enemyBoxController : MonoBehaviour
             { 
                 flipColor();
                 gm.session.isMyTurn = false;
-                StartCoroutine(gm.waitForTurn());
+                StartCoroutine(handleShot());
+
+                //StartCoroutine(gm.waitForTurn());
             }
         }
      

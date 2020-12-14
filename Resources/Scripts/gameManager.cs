@@ -36,18 +36,21 @@ using UnityEngine.UI;
 //3. Figure out end of game
 
 
-
+[System.Serializable]
 public class Ship
 {
-    int numberofblocks;
-    Color backColor;
+    public int numberofblocks;
+    public Color backColor;
     
-    bool vertical;
+    public bool vertical;
     public bool placed;
 
+    public string shipname;
 
-    public Ship(int blocks)
+
+    public Ship(string _shipname, int blocks)
     {
+        shipname = _shipname;
         numberofblocks = blocks;
         vertical = false;
         placed = false;
@@ -126,7 +129,8 @@ public class Ship
             }
             else
             {
-                //*
+                //* vertical
+                vertical = true;
                 if (y + (numberofblocks-1) <= 10)
                 {
                     if (checkFree(x, y, grid, true))
@@ -265,13 +269,7 @@ public class gameSession
 
     
 
-    public void fireShot()
-    {
-
-    }
-
-    
-
+  
 
 
 }
@@ -281,8 +279,35 @@ public class Player
     public string PlayerName;
     public bool isHisTurn;
 
-    
+   
+  
+}
 
+public class Shot
+{
+    public int x, y;
+
+    public Shot(int _x, int _y)
+    {
+        x = _x;
+        y = _y;
+    }
+}
+
+
+[System.Serializable]
+public class Fleet
+{
+    public List<Ship> allships = new List<Ship>();
+
+    public Fleet(Ship[] _allships)
+    {
+        foreach (Ship s in _allships)
+        {
+
+            allships.Add(s);
+        }
+    }
 }
 
 public class gameManager : MonoBehaviour
@@ -290,18 +315,20 @@ public class gameManager : MonoBehaviour
 
     public BattleshipGrid playerGrid, enemyGrid;
 
+    public Player currentPlayer, otherPlayer;
+
     GameObject rowLabel, rowL, buttonPrefab,timerText,theTimer;
 
     public gameSession session;
 
     bool timerrunning = false;
 
-    FirebaseScript dbScript;
+    public FirebaseScript dbScript;
 
     //these correspond with the unique keys in firebase
     public string currentPlayerKey,enemyPlayerKey;
-    
 
+    bool starts = false;
 
     GameObject sq;
 
@@ -322,6 +349,9 @@ public class gameManager : MonoBehaviour
     {
         while (playercounter<2)
         {
+            //first player to join starts
+            starts = true;
+
             Debug.Log("Waiting for other player" + Time.time);
             yield return dbScript.getNumberOfRecords();
             playercounter = dbScript.numberOfRecords;
@@ -329,13 +359,20 @@ public class gameManager : MonoBehaviour
             
             
         }
-        //if another player joins everything is deleted DANGEROUS
+        //if another player joins the game can begin
         Player otherPlayer = new Player();
         //I need to get the key of the OTHER player
         
-         yield return dbScript.getOtherPlayerKey(otherPlayer, this);
+        yield return dbScript.getOtherPlayerKey(otherPlayer, this);
 
-        //what variable will be filled here?
+        //I now have the other player's key.  Let's randomly choose whose turn is next. 
+        Debug.Log("other player has joined");
+
+        session.isMyTurn = true;
+
+
+
+        
 
 
         yield return null;
@@ -344,12 +381,12 @@ public class gameManager : MonoBehaviour
     IEnumerator addPlayerToFirebase()
     {
 
-        dbScript = Camera.main.GetComponent<FirebaseScript>();
+        
        yield return dbScript.initFirebase();
-        Player newPlayer = new Player();
+        currentPlayer = new Player();
 
-        newPlayer.PlayerName = "P"+playercounter;
-        newPlayer.isHisTurn = true;
+        currentPlayer.PlayerName = "P"+playercounter;
+        currentPlayer.isHisTurn = true;
 
 
         
@@ -357,18 +394,16 @@ public class gameManager : MonoBehaviour
         //yield return dbScript.clearFirebase();
 
 
-        yield return dbScript.addDataClass(JsonUtility.ToJson(newPlayer),this);
+        yield return dbScript.addDataClass(JsonUtility.ToJson(currentPlayer),this);
 
         yield return waitForOtherPlayer();
 
-        //player has been added
-
-        //player should be inserted to firebase now. 
+        
 
     }
 
 
-    public IEnumerator myTurn()
+    public IEnumerator BeginGame()
     {
         timerText.GetComponentInChildren<Text>().text = "00:00";
         while (true)
@@ -380,9 +415,17 @@ public class gameManager : MonoBehaviour
             yield return null;
         }
         //this will happen only when all ships are placed.
+        
         session.startGame();
         StartCoroutine(updateTimer());
-        StartCoroutine(addPlayerToFirebase());
+        
+        yield return addPlayerToFirebase();
+
+        yield return dbScript.saveShips(this, new Fleet(allships));
+
+        //finish the whole thing
+
+
         yield return null;
 
     }
@@ -453,17 +496,19 @@ public class gameManager : MonoBehaviour
         //add the firebase script to the main camera
         Camera.main.gameObject.AddComponent<FirebaseScript>();
 
+        dbScript = Camera.main.GetComponent<FirebaseScript>();
+
         //made a copy of rowlabel in the variable timertext
         timerText = rowLabel;
 
 
         allships = new Ship[5];
 
-        Ship carrier = new Ship(5);
-        Ship battleship = new Ship(4);
-        Ship cruiser = new Ship(3);
-        Ship submarine = new Ship(3);
-        Ship destroyer = new Ship(2);
+        Ship carrier = new Ship("Carrier",5);
+        Ship battleship = new Ship("Battleship",4);
+        Ship cruiser = new Ship("Cruiser",3);
+        Ship submarine = new Ship("Submarine",3);
+        Ship destroyer = new Ship("Destroyer",2);
 
 
         allships[4] = carrier;
@@ -562,7 +607,7 @@ public class gameManager : MonoBehaviour
 
         session = new gameSession(allships);
 
-        StartCoroutine(myTurn());
+        StartCoroutine(BeginGame());
 
 
       
@@ -571,8 +616,10 @@ public class gameManager : MonoBehaviour
 
     public IEnumerator waitForTurn()
     {
-        yield return new WaitForSeconds(10f);
-        session.isMyTurn = true;
+        // yield return new WaitForSeconds(10f);
+        //session.isMyTurn = true;
+
+        yield return null;
     }
 
     string[] letters = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };

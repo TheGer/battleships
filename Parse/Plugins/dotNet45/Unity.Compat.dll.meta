@@ -16,24 +16,24 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
-      '': OSXIntel
+      : OSXIntel
     second:
       enabled: 1
       settings:
         CPU: x86
   - first:
-      '': OSXIntel64
+      : OSXIntel64
     second:
       enabled: 1
       settings:
         CPU: x86_64
   - first:
-      '': Web
+      : Web
     second:
       enabled: 1
       settings: {}
   - first:
-      '': WebStreamed
+      : WebStreamed
     second:
       enabled: 1
       settings: {}
@@ -77,7 +77,7 @@ PluginImporter:
     second:
       enabled: 1
       settings:
-        CPU: x86_64
+        CPU: AnyCPU
   - first:
       Standalone: LinuxUniversal
     second:

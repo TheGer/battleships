@@ -41,6 +41,9 @@ public class Ship
 {
     public int numberofblocks;
     public Color backColor;
+
+    public int _x;
+    public int _y;
     
     public bool vertical;
     public bool placed;
@@ -122,6 +125,9 @@ public class Ship
                             }
                         }
                         placed = true;
+                        _x = x;
+                        _y = y;
+
                     }
 
                 }
@@ -147,6 +153,8 @@ public class Ship
                             }
                         }
                         placed = true;
+                        _x = x;
+                        _y = y;
                     }
                 }
 
@@ -168,6 +176,19 @@ public class BattleshipGrid
         blocks = new List<Block>();
     }
 
+    public bool checkHit(Shot s)
+    {
+        foreach (Block b in blocks)
+        {
+            if ((b.indexX == s.x) && (b.indexY == s.y) && b.filled)
+            {
+                //hit
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void makeClickable()
     {
         foreach (Block b in blocks)
@@ -183,7 +204,7 @@ public class BattleshipGrid
         foreach (Block b in blocks)
         {
             b.toptile.AddComponent<enemyBoxController>();
-            b.setClickCoordinates();
+            b.setEnemyClickCoordinates();
 
         }
     }
@@ -214,6 +235,15 @@ public class Block
         {
             toptile.GetComponent<playerBoxController>().indexX = indexX;
             toptile.GetComponent<playerBoxController>().indexY = indexY;
+        }
+    }
+
+    public void setEnemyClickCoordinates()
+    {
+        if (toptile.GetComponent<enemyBoxController>() != null)
+        {
+            toptile.GetComponent<enemyBoxController>().indexX = indexX;
+            toptile.GetComponent<enemyBoxController>().indexY = indexY;
         }
     }
 
@@ -283,6 +313,7 @@ public class Player
   
 }
 
+[System.Serializable]
 public class Shot
 {
     public int x, y;
@@ -347,6 +378,9 @@ public class gameManager : MonoBehaviour
 
     IEnumerator waitForOtherPlayer()
     {
+        yield return dbScript.getNumberOfRecords();
+        playercounter = dbScript.numberOfRecords;
+
         while (playercounter<2)
         {
             //first player to join starts
@@ -423,12 +457,35 @@ public class gameManager : MonoBehaviour
 
         yield return dbScript.saveShips(this, new Fleet(allships));
 
-        //finish the whole thing
+        //start the turns. 
+        if (starts)
+        {
+            session.isMyTurn = true;
+            while (true) { 
+              
+              
+              if (session.isMyTurn)
+              {
+                    Debug.Log("my turn!");
+                    yield return null;
+              }
+              else
+              {
+                    Debug.Log("his turn!");
+                    yield return null;
+              }
+
+
+           }
+        } 
+
 
 
         yield return null;
 
     }
+
+
 
     public IEnumerator updateTimer()
     {
@@ -513,8 +570,8 @@ public class gameManager : MonoBehaviour
 
         allships[4] = carrier;
         allships[3] = battleship;
-        allships[2] = cruiser;
-        allships[1] = submarine;
+        allships[2] = submarine;
+        allships[1] = cruiser;
         allships[0] = destroyer;
 
 

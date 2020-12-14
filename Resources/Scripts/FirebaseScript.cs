@@ -288,18 +288,45 @@ public class FirebaseScript : MonoBehaviour
             }
         }
 
-            //Debug.Log(myDataDictionary.Keys.ToList());
+
+        //register shots listener
+
+
+        DatabaseReference shotReference = reference.Child(g.enemyPlayerKey).Child("Shots");
+
+        shotReference.ChildAdded += (sender, args) => handleEnemyShot(sender, args, g);
+        //Debug.Log(myDataDictionary.Keys.ToList());
 
     }
 
-    public IEnumerator addShot(gameManager g,Shot s)
+    public IEnumerator fireShot(gameManager g,Shot s)
     {
         string jsonshot = JsonUtility.ToJson(s);
-        Task addshottask = reference.Child(g.currentPlayerKey).Push().SetRawJsonValueAsync(jsonshot);
-
+        Task addshottask = reference.Child(g.currentPlayerKey).Child("Shots").Push().SetRawJsonValueAsync(jsonshot);
+        
+        
         yield return new WaitUntil(() => addshottask.IsCompleted);
 
+
+
     }
+
+
+
+
+
+    void handleEnemyShot(object sender, ChildChangedEventArgs args,gameManager g)
+    {
+
+        Debug.Log("enemy shot");
+      
+            g.session.isMyTurn = true;
+            
+ 
+
+    }
+
+    
 
     public IEnumerator saveShips(gameManager g, Fleet f)
     {

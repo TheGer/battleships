@@ -10,6 +10,8 @@ public class enemyBoxController : MonoBehaviour
 
     gameManager gm;
 
+    bool hasshot;
+
     private void Start()
     {
         currentColor = GetComponent<SpriteRenderer>().color;
@@ -23,17 +25,19 @@ public class enemyBoxController : MonoBehaviour
 
     IEnumerator handleShot()
     {
-        yield return gm.dbScript.addShot(gm, new Shot(indexX, indexY));
+        yield return gm.dbScript.fireShot(gm, new Shot(indexX, indexY));
+        
 
     }
 
 
     void OnMouseOver()
     {
+        
         if (Input.GetMouseButtonDown(0))
         {
             //horizontal
-            Debug.Log("Horizontal: "+indexX + " " + indexY);
+            Debug.Log("Fire!: "+indexX + " " + indexY);
 
             //   gm.currentlySelectedShip.place(indexX, indexY, false,gm.playerGrid);
 
@@ -42,7 +46,7 @@ public class enemyBoxController : MonoBehaviour
                 flipColor();
                 gm.session.isMyTurn = false;
                 StartCoroutine(handleShot());
-
+                
                 //StartCoroutine(gm.waitForTurn());
             }
         }

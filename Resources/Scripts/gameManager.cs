@@ -391,7 +391,7 @@ public class gameManager : MonoBehaviour
             playercounter = dbScript.numberOfRecords;
            
             
-            
+            //lobby
         }
         //if another player joins the game can begin
         Player otherPlayer = new Player();
@@ -471,7 +471,7 @@ public class gameManager : MonoBehaviour
               }
               else
               {
-                    Debug.Log("his turn!");
+                    Debug.Log("their turn!");
                     yield return null;
               }
 
@@ -490,7 +490,7 @@ public class gameManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("nhis turn!");
+                    Debug.Log("ntheir turn!");
                     yield return null;
                 }
 

@@ -293,7 +293,7 @@ public class gameSession
 
     public void startGame()
     {
-        isMyTurn = true;
+       
         gameStarted = true;
     }
 
@@ -402,7 +402,7 @@ public class gameManager : MonoBehaviour
         //I now have the other player's key.  Let's randomly choose whose turn is next. 
         Debug.Log("other player has joined");
 
-        session.isMyTurn = true;
+       // session.isMyTurn = true;
 
 
 
@@ -477,7 +477,26 @@ public class gameManager : MonoBehaviour
 
 
            }
-        } 
+        }
+        else
+        {
+            while (true)
+            {
+
+                if (session.isMyTurn)
+                {
+                    Debug.Log("nmy turn!");
+                    yield return null;
+                }
+                else
+                {
+                    Debug.Log("nhis turn!");
+                    yield return null;
+                }
+
+
+            }
+        }
 
 
 

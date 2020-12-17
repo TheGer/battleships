@@ -284,6 +284,7 @@ public class FirebaseScript : MonoBehaviour
         {
             if (!(g.currentPlayerKey == element.Key.ToString()))
             {
+                
                 g.enemyPlayerKey = element.Key.ToString();
             }
         }
@@ -318,8 +319,29 @@ public class FirebaseScript : MonoBehaviour
     void handleEnemyShot(object sender, ChildChangedEventArgs args,gameManager g)
     {
 
-        Debug.Log("enemy shot");
-      
+        
+        DataSnapshot snapshot = args.Snapshot;
+        Dictionary<string,object> enemyshotdata = (Dictionary<string,object>)snapshot.Value;
+
+        //selecting the value from the key, in this case the key is X and the value is the value of the enemy shot. 
+
+        //let us highlight the shot on the playergrid. 
+        Shot enemyshot = new Shot(Convert.ToInt32(enemyshotdata["x"]),Convert.ToInt32(enemyshotdata["y"]));
+
+
+        foreach (Block b in g.playerGrid.blocks)
+        {
+            if (b.indexX == enemyshot.x && b.indexY == enemyshot.y)
+            {
+                b.toptile.GetComponent<playerBoxController>().flipColor();
+            }
+        }
+
+        Debug.Log(enemyshot.ToString());
+
+
+
+
             g.session.isMyTurn = true;
             
  

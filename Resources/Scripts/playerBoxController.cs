@@ -50,7 +50,7 @@ public class playerBoxController : MonoBehaviour
 
     }
 
-    void flipColor()
+    public void flipColor()
     {
         // Destroy the gameObject after clicking on it
         highlighted = !highlighted;
@@ -63,7 +63,7 @@ public class playerBoxController : MonoBehaviour
 
         if(highlighted)
         {
-            GetComponent<SpriteRenderer>().color = Color.red;
+            GetComponent<SpriteRenderer>().color = Color.yellow;
         }else
         {
             GetComponent<SpriteRenderer>().color = currentColor;

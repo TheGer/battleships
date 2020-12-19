@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -44,11 +45,14 @@ public class Ship
 
     public int _x;
     public int _y;
+
     
     public bool vertical;
     public bool placed;
 
     public string shipname;
+
+    public List<Shot> hits;
 
 
     public Ship(string _shipname, int blocks)
@@ -58,12 +62,61 @@ public class Ship
         vertical = false;
         placed = false;
         backColor = Color.red;
+        hits = new List<Shot>();
 
     }
+
+    public bool checkHit(Shot s,BattleshipGrid g)
+    {
+        //linq is quite cool.  Are there any hits that have the same x and y in the list of hits??
+        if (!hits.Any(hit=>(hit.x == s.x && hit.y == s.y)))
+        {
+            //I want hit to return true if the place where the shot is is filled
+            
+
+            if (checkHit(s.x, s.y, this.vertical))
+            {
+                hits.Add(s);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+            
+        }
+        else
+        {
+            Debug.Log("hit already!");
+            return false;
+        }
+
+    }
+
 
     public void setBackColor(Color newcolor)
     {
         backColor = newcolor;
+    }
+
+    bool checkHit(int x, int y, bool orientation)
+    {
+        if (!orientation)
+        {
+            if (x >= _x && x < _x + numberofblocks && y == _y)
+            {
+                return true;
+
+            }
+        }
+        else
+        {
+            if (y >= _y && y < _y + numberofblocks && x == _x)
+            {
+                return true;
+            }     
+        }
+        return false;
     }
 
     bool checkFree(int x, int y, BattleshipGrid g, bool orientation)
@@ -176,19 +229,7 @@ public class BattleshipGrid
         blocks = new List<Block>();
     }
 
-    public bool checkHit(Shot s)
-    {
-        foreach (Block b in blocks)
-        {
-            if ((b.indexX == s.x) && (b.indexY == s.y) && b.filled)
-            {
-                //hit
-                return true;
-            }
-        }
-        return false;
-    }
-
+    
     public void makeClickable()
     {
         foreach (Block b in blocks)
@@ -365,6 +406,8 @@ public class gameManager : MonoBehaviour
 
     Ship[] allships;
 
+    public Fleet battlefleet;
+
     public Ship currentlySelectedShip;
 
     int playercounter = 1;
@@ -455,7 +498,9 @@ public class gameManager : MonoBehaviour
         
         yield return addPlayerToFirebase();
 
-        yield return dbScript.saveShips(this, new Fleet(allships));
+        battlefleet = new Fleet(allships);
+
+        yield return dbScript.saveShips(this, battlefleet);
 
         //start the turns. 
         if (starts)
@@ -466,12 +511,12 @@ public class gameManager : MonoBehaviour
               
               if (session.isMyTurn)
               {
-                    Debug.Log("my turn!");
+           //         Debug.Log("my turn!");
                     yield return null;
               }
               else
               {
-                    Debug.Log("their turn!");
+          //          Debug.Log("their turn!");
                     yield return null;
               }
 
@@ -485,12 +530,12 @@ public class gameManager : MonoBehaviour
 
                 if (session.isMyTurn)
                 {
-                    Debug.Log("nmy turn!");
+        //            Debug.Log("nmy turn!");
                     yield return null;
                 }
                 else
                 {
-                    Debug.Log("ntheir turn!");
+         //           Debug.Log("ntheir turn!");
                     yield return null;
                 }
 
@@ -576,6 +621,8 @@ public class gameManager : MonoBehaviour
 
         //made a copy of rowlabel in the variable timertext
         timerText = rowLabel;
+
+        
 
 
         allships = new Ship[5];

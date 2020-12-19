@@ -339,6 +339,19 @@ public class FirebaseScript : MonoBehaviour
 
         Debug.Log(enemyshot.ToString());
 
+        //get player ships
+        foreach (Ship s in g.battlefleet.allships)
+        {
+            //ship in your fleet has been hit!  this is added to the list of hits in the ship
+            if (s.checkHit(enemyshot, g.playerGrid)) { 
+
+                Debug.Log(s.shipname + "Has been hit!");
+
+                //update ships in db
+                StartCoroutine(saveShips(g, g.battlefleet));
+            }
+
+        }
 
 
 
@@ -349,6 +362,7 @@ public class FirebaseScript : MonoBehaviour
     }
 
     
+   
 
     public IEnumerator saveShips(gameManager g, Fleet f)
     {
@@ -361,8 +375,8 @@ public class FirebaseScript : MonoBehaviour
         Debug.Log(jsonfleet);
 
         
-
-        Task addfleettask = reference.Child(g.currentPlayerKey).Push().SetRawJsonValueAsync(jsonfleet);
+        //modified.  I don't really need a unique key for the ships.  Also makes it easier to get the list of ships from fleet.
+        Task addfleettask = reference.Child(g.currentPlayerKey).Child("Ships").SetRawJsonValueAsync(jsonfleet);
 
         yield return new WaitUntil(() => addfleettask.IsCompleted);
     }

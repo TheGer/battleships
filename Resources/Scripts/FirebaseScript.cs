@@ -1,6 +1,7 @@
 ﻿using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
+using Firebase.Storage;
 using Firebase.Extensions;
 using Firebase.Unity.Editor;
 
@@ -11,6 +12,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading;
+using System.IO;
 
 //using UnityEngine.UIElements;
 
@@ -22,6 +25,9 @@ public class FirebaseScript : MonoBehaviour
 {
     
     DatabaseReference reference;
+
+    //reference to the storage bucket
+    FirebaseStorage storage;
 
     string output = "";
 
@@ -72,6 +78,76 @@ public class FirebaseScript : MonoBehaviour
 
 
 
+    }
+
+
+    public IEnumerator uploadScreenshot()
+    {
+        yield return initFirebase();
+
+        string filename = Application.persistentDataPath + "/sc_" + DateTime.Now.ToString("MM_dd_yyyyH_mm")+".png";
+
+        ScreenCapture.CaptureScreenshot(filename);
+
+        yield return new WaitForSeconds(2f);
+
+        Debug.Log(filename);
+
+        storage = FirebaseStorage.DefaultInstance;
+
+        Debug.Log(File.Exists(filename));
+
+     
+        
+        StorageReference storage_ref = storage.GetReferenceFromUrl("gs://gerry-firebase1.appspot.com");
+
+        StorageReference screenshots_folder = storage_ref.Child("screenshots"+ "/sc_" + DateTime.Now.ToString("MM_dd_yyyyH_mm") + ".png");
+
+        //string local_file_uri = string.Format("{0}://{1}",Uri.UriSchemeFile, filename);
+
+        MetadataChange pngmetadata = new MetadataChange();
+
+        pngmetadata.ContentType = "image/png";
+
+        Task uploadScreenshotTask = screenshots_folder.PutFileAsync(filename,pngmetadata, 
+            new Firebase.Storage.StorageProgress<UploadState>(state => {
+            // called periodically during the upload
+            Debug.Log(String.Format("Progress: {0} of {1} bytes transferred.",
+                               state.BytesTransferred, state.TotalByteCount));
+            }), CancellationToken.None, null);
+            
+            
+         uploadScreenshotTask.ContinueWith(resultTask => {
+             if (!resultTask.IsFaulted && !resultTask.IsCanceled)
+             {
+                 Debug.Log("Upload finished.");
+             }
+
+             if (resultTask.IsFaulted)
+             {
+                 //my internet exploded or firebase exploded or some other error happened here
+                 Debug.Log("Sorry, file  was not uploaded!" + resultTask.Exception);
+
+                 return;
+             }
+         });
+        
+
+        yield return new WaitUntil(() => uploadScreenshotTask.IsCompleted);
+        
+      
+    }
+
+    public IEnumerator downloadAndSaveImage()
+    {
+
+        string pathToSaveIn = Application.persistentDataPath;
+
+        storage = FirebaseStorage.DefaultInstance;
+
+
+
+        yield return null;
     }
 
 
@@ -445,15 +521,21 @@ public class FirebaseScript : MonoBehaviour
 
     public IEnumerator initFirebase()
     {
-        FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://gerry-firebase1.firebaseio.com/");
-        reference = FirebaseDatabase.DefaultInstance.RootReference;
-        yield return signInToFirebase();
-        Debug.Log("Firebase Initialized!");
-        yield return true;
+        if (!signedin) { 
+            FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://gerry-firebase1.firebaseio.com/");
+            reference = FirebaseDatabase.DefaultInstance.RootReference;
+            yield return signInToFirebase();
+            Debug.Log("Firebase Initialized!");
+            yield return true;
+            signedin = true;
+        } else
+        {
+            yield return null;
+        }
     }
 
 
-
+    public bool signedin = false;
 
     //list data from firebase
     void Start()

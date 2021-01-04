@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 05faff41310d42b1b623c09a22aa53ff
+guid: 5b5600ee71b5441bad7669ff8835c5cf
 labels:
 - gvh
 - gvh_version-6.6.0
@@ -28,13 +28,13 @@ PluginImporter:
       settings:
         CPU: None
     Linux64:
-      enabled: 0
+      enabled: 1
       settings:
-        CPU: None
+        CPU: x86_64
     LinuxUniversal:
-      enabled: 0
+      enabled: 1
       settings:
-        CPU: None
+        CPU: AnyCPU
     OSXIntel:
       enabled: 0
       settings:
@@ -58,9 +58,9 @@ PluginImporter:
       settings:
         CPU: None
     Win64:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: x86_64
+        CPU: None
     WindowsStoreApps:
       enabled: 0
       settings:

@@ -369,22 +369,51 @@ public class FirebaseScript : MonoBehaviour
         //register shots listener
 
 
-        DatabaseReference shotReference = reference.Child(g.enemyPlayerKey).Child("Shots");
+        DatabaseReference enemyshotReference = reference.Child(g.enemyPlayerKey).Child("Shots");
+        DatabaseReference myshotReference = reference.Child(g.currentPlayerKey).Child("Shots");
 
-        shotReference.ChildAdded += (sender, args) => handleEnemyShot(sender, args, g);
+        enemyshotReference.ChildAdded += (sender, args) => handleEnemyShot(sender, args, g);
+        myshotReference.ChildChanged += (sender, args) => handleMyShot(sender, args, g);
+
+
         //Debug.Log(myDataDictionary.Keys.ToList());
 
     }
 
     public IEnumerator fireShot(gameManager g,Shot s)
     {
+
+        
         string jsonshot = JsonUtility.ToJson(s);
+
+
+        
+        
+
         Task addshottask = reference.Child(g.currentPlayerKey).Child("Shots").Push().SetRawJsonValueAsync(jsonshot);
         
-        
+
         yield return new WaitUntil(() => addshottask.IsCompleted);
 
 
+
+    }
+
+    void handleMyShot(object sender, ChildChangedEventArgs args, gameManager g)
+    {
+        DataSnapshot snapshot = args.Snapshot;
+
+        Dictionary<string, object> myshotdata = (Dictionary<string, object>)snapshot.Value;
+
+        Shot myshot = new Shot(Convert.ToInt32(myshotdata["x"]), Convert.ToInt32(myshotdata["y"]));
+
+        foreach (Block b in g.enemyGrid.blocks)
+        {
+            if (b.indexX == myshot.x && b.indexY == myshot.y)
+            {
+                b.toptile.GetComponent<SpriteRenderer>().color = Color.blue;
+            }
+        }
 
     }
 
@@ -397,6 +426,7 @@ public class FirebaseScript : MonoBehaviour
 
         
         DataSnapshot snapshot = args.Snapshot;
+        
         Dictionary<string,object> enemyshotdata = (Dictionary<string,object>)snapshot.Value;
 
         //selecting the value from the key, in this case the key is X and the value is the value of the enemy shot. 
@@ -423,8 +453,23 @@ public class FirebaseScript : MonoBehaviour
 
                 Debug.Log(s.shipname + "Has been hit!");
 
+
+                enemyshot.hit = true;
+
+                string jsonshot = JsonUtility.ToJson(enemyshot);
+
+                Debug.Log(jsonshot);
+
+
+                //update the enemy shot to tell the enemy that the shot has hit.
+                reference.Child(g.enemyPlayerKey).Child("Shots").Child(snapshot.Key).SetRawJsonValueAsync(jsonshot);
+
+
+
                 //update ships in db
                 StartCoroutine(saveShips(g, g.battlefleet));
+
+
             }
 
         }

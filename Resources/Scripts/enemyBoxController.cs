@@ -43,8 +43,11 @@ public class enemyBoxController : MonoBehaviour
 
             if (gm.session.isMyTurn)
             { 
+                //turn the enemy box RED
                 flipColor();
+                //set is my turn to false
                 gm.session.isMyTurn = false;
+                //start the process of updating the box to YELLOW on the other player
                 StartCoroutine(handleShot());
                 
                 //StartCoroutine(gm.waitForTurn());

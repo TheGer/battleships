@@ -358,11 +358,14 @@ public class Player
 public class Shot
 {
     public int x, y;
+    public bool hit;
+    public string id;
 
     public Shot(int _x, int _y)
     {
         x = _x;
         y = _y;
+        hit = false;
     }
 }
 

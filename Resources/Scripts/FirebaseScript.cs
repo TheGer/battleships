@@ -85,7 +85,9 @@ public class FirebaseScript : MonoBehaviour
     {
         yield return initFirebase();
 
-        string filename = Application.persistentDataPath + "/sc_" + DateTime.Now.ToString("MM_dd_yyyyH_mm")+".png";
+        string actualfilename = "/sc_" + DateTime.Now.ToString("MM_dd_yyyyH_mm")+".png";
+
+        string filename = Application.persistentDataPath + actualfilename;
 
         ScreenCapture.CaptureScreenshot(filename);
 
@@ -101,7 +103,7 @@ public class FirebaseScript : MonoBehaviour
         
         StorageReference storage_ref = storage.GetReferenceFromUrl("gs://gerry-firebase1.appspot.com");
 
-        StorageReference screenshots_folder = storage_ref.Child("screenshots"+ "/sc_" + DateTime.Now.ToString("MM_dd_yyyyH_mm") + ".png");
+        StorageReference screenshots_folder = storage_ref.Child("screenshots"+ actualfilename);
 
         //string local_file_uri = string.Format("{0}://{1}",Uri.UriSchemeFile, filename);
 
@@ -111,7 +113,7 @@ public class FirebaseScript : MonoBehaviour
 
         Task uploadScreenshotTask = screenshots_folder.PutFileAsync(filename,pngmetadata, 
             new Firebase.Storage.StorageProgress<UploadState>(state => {
-            // called periodically during the upload
+            // called periodically during the upload - you can implement some sort of progress bar display here
             Debug.Log(String.Format("Progress: {0} of {1} bytes transferred.",
                                state.BytesTransferred, state.TotalByteCount));
             }), CancellationToken.None, null);

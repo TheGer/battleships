@@ -99,7 +99,6 @@ public class FirebaseScript : MonoBehaviour
 
         Debug.Log(File.Exists(filename));
 
-     
         
         StorageReference storage_ref = storage.GetReferenceFromUrl("gs://gerry-firebase1.appspot.com");
 
@@ -140,6 +139,22 @@ public class FirebaseScript : MonoBehaviour
       
     }
 
+    private Sprite LoadSprite(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+        if (System.IO.File.Exists(path))
+        {
+            Debug.Log("hello");
+            byte[] bytes = System.IO.File.ReadAllBytes(path);
+            Texture2D texture = new Texture2D(1, 1);
+            texture.LoadImage(bytes);
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            return sprite;
+        }
+        return null;
+    }
+
+
     public IEnumerator downloadAndSaveImage()
     {
 
@@ -147,6 +162,37 @@ public class FirebaseScript : MonoBehaviour
 
         storage = FirebaseStorage.DefaultInstance;
 
+        // Create local filesystem URL
+        
+        string filename = Application.persistentDataPath + "/warship1.jpg";
+
+        StorageReference storage_ref = storage.GetReferenceFromUrl("gs://gerry-firebase1.appspot.com/warship1.jpg");
+
+        // Start downloading a file
+        Task task = storage_ref.GetFileAsync(filename,
+          new Firebase.Storage.StorageProgress<DownloadState>((DownloadState state) => {
+      // called periodically during the download
+      Debug.Log(String.Format(
+        "Progress: {0} of {1} bytes transferred.",
+        state.BytesTransferred,
+        state.TotalByteCount
+      ));
+          }), CancellationToken.None);
+
+        task.ContinueWith(resultTask => {
+            if (!resultTask.IsFaulted && !resultTask.IsCanceled)
+            {
+                Debug.Log("Download finished.");
+            }
+        });
+
+        Debug.Log(filename);
+
+        yield return new WaitUntil(() => task.IsCompleted);
+
+
+        Sprite warship = LoadSprite(filename);
+        GameObject.Find("backgroundImage").GetComponent<Image>().sprite = warship;
 
 
         yield return null;

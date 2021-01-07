@@ -808,6 +808,8 @@ public class gameManager : MonoBehaviour
 
     }
 
+    
+
     // Update is called once per frame
     void Update()
     {
@@ -819,6 +821,11 @@ public class gameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.S))
         {
             StartCoroutine(dbScript.uploadScreenshot());
+        }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            StartCoroutine(dbScript.downloadAndSaveImage());
         }
     }
 }
